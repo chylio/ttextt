@@ -31,18 +31,25 @@ export default function App() {
   // 單日預約日期
   const [singleDate, setSingleDate] = useState("");
   
+  // 區間預約日期
+  const [appointmentRange, setAppointmentRange] = useState({
+    start: "",
+    end: ""
+  });
+  
   // 實際預約的日期
   const [bookedDate, setBookedDate] = useState(null);
 
   // 追蹤實際預約的統計數據
   const [actualBookingStats, setActualBookingStats] = useState({
-    total: 0,
-    os:  0,
-    endo:  0,
+    total:  0,
+    os: 0,
+    endo: 0,
     pros: 0,
     gen: 0,
   });
 
+  // 統計用的日期區間（與預約日期分開）
   const [dateRange, setDateRange] = useState({
     start: todayISO(),
     end: addDaysISO(30),
@@ -64,7 +71,7 @@ export default function App() {
       total: clinicStats.total + actualBookingStats.total,
       os: clinicStats.os + actualBookingStats.os,
       endo: clinicStats.endo + actualBookingStats.endo,
-      pros: clinicStats.pros + actualBookingStats.pros,
+      pros: clinicStats.pros + actualBookingStats. pros,
       gen: clinicStats.gen + actualBookingStats.gen,
     }),
     [clinicStats, actualBookingStats]
@@ -88,9 +95,9 @@ export default function App() {
   const calculatePreferredDate = () => {
     if (bookingMode === 'single' && singleDate) {
       return singleDate;
-    } else if (bookingMode === 'range') {
-      // 使用區間開始日期作為優先預約日期
-      return dateRange.start;
+    } else if (bookingMode === 'range' && appointmentRange. start) {
+      // 使用預約區間開始日期作為優先預約日期
+      return appointmentRange.start;
     }
     return null;
   };
@@ -104,8 +111,9 @@ export default function App() {
   };
 
   const handleMatch = () => {
-    if (selectedTreatments.length === 0 || !bookingMode) return;
+    if (selectedTreatments.length === 0 || ! bookingMode) return;
     if (bookingMode === 'single' && ! singleDate) return;
+    if (bookingMode === 'range' && (! appointmentRange.start || !appointmentRange.end)) return;
     
     setIsMatching(true);
 
@@ -116,7 +124,7 @@ export default function App() {
         // 更新醫師的每日預約數
         setDoctors((prev) =>
           prev.map((d) =>
-            d.id === result.id ?  { ...d, dailyCount: d.dailyCount + 1 } : d
+            d.id === result.id ? { ...d, dailyCount: d.dailyCount + 1 } : d
           )
         );
 
@@ -133,9 +141,9 @@ export default function App() {
           selectedTreatments.forEach((treatment) => {
             const category = treatment.category;
             if (category === "os") {
-              newStats.os += 1;
+              newStats. os += 1;
             } else if (category === "endo") {
-              newStats.endo += 1;
+              newStats. endo += 1;
             } else if (category === "pros") {
               newStats.pros += 1;
             } else if (category === "general") {
@@ -157,6 +165,7 @@ export default function App() {
     setSelectedTreatments([]);
     setBookingMode("");
     setSingleDate("");
+    setAppointmentRange({ start: "", end:  "" });
     setBookedDate(null);
   };
 
@@ -166,7 +175,7 @@ export default function App() {
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-12 bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 gap-8">
           <div className="flex items-center gap-6">
-            <div className="bg-blue-600 p-5 rounded-[2.5rem] text-white shadow-2xl">
+            <div className="bg-blue-600 p-5 rounded-[2. 5rem] text-white shadow-2xl">
               <BrainCircuit size={48} />
             </div>
             <div>
@@ -208,7 +217,7 @@ export default function App() {
         </div>
 
         {! bookedDoctor ? (
-          <div className="grid grid-cols-1 lg: grid-cols-12 gap-10 animate-in fade-in duration-700">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 animate-in fade-in duration-700">
             {/* 左側：預約日期與處置選擇 */}
             <div className="lg:col-span-7 bg-white p-12 rounded-[4rem] shadow-xl border border-white relative overflow-hidden">
               {/* 第一步：選擇預約日期 */}
@@ -226,7 +235,7 @@ export default function App() {
                       setBookingMode('range');
                       setSingleDate('');
                     }}
-                    className={`p-8 rounded-[2.5rem] border-2 transition-all ${
+                    className={`p-8 rounded-[2. 5rem] border-2 transition-all ${
                       bookingMode === 'range'
                         ? 'bg-blue-50 border-blue-500 shadow-lg'
                         : 'bg-white border-slate-200 hover:border-blue-300'
@@ -237,15 +246,18 @@ export default function App() {
                       區間預約
                     </h3>
                     <p className="text-sm font-bold text-slate-500">
-                      使用上方設定的日期區間
+                      選擇一段預約日期區間
                     </p>
                   </button>
 
                   <button
-                    onClick={() => setBookingMode('single')}
+                    onClick={() => {
+                      setBookingMode('single');
+                      setAppointmentRange({ start: "", end: "" });
+                    }}
                     className={`p-8 rounded-[2.5rem] border-2 transition-all ${
                       bookingMode === 'single'
-                        ?  'bg-blue-50 border-blue-500 shadow-lg'
+                        ? 'bg-blue-50 border-blue-500 shadow-lg'
                         : 'bg-white border-slate-200 hover:border-blue-300'
                     }`}
                   >
@@ -258,6 +270,34 @@ export default function App() {
                     </p>
                   </button>
                 </div>
+
+                {/* 區間預約日期選擇器 */}
+                {bookingMode === 'range' && (
+                  <div className="bg-blue-50 p-8 rounded-[2.5rem] border-2 border-blue-200 animate-in slide-in-from-top duration-500">
+                    <label className="block text-sm font-black text-blue-900 mb-3 uppercase tracking-widest">
+                      選擇預約區間
+                    </label>
+                    <div className="flex items-center gap-4">
+                      <input
+                        type="date"
+                        value={appointmentRange.start}
+                        onChange={(e) => setAppointmentRange({ ...appointmentRange, start: e.target.value })}
+                        min={todayISO()}
+                        className="flex-1 p-4 rounded-2xl border-2 border-blue-300 focus:border-blue-500 focus:ring-0 text-lg font-bold text-slate-700"
+                        placeholder="開始日期"
+                      />
+                      <ArrowRight size={24} className="text-blue-600" />
+                      <input
+                        type="date"
+                        value={appointmentRange.end}
+                        onChange={(e) => setAppointmentRange({ ... appointmentRange, end: e. target.value })}
+                        min={appointmentRange.start || todayISO()}
+                        className="flex-1 p-4 rounded-2xl border-2 border-blue-300 focus:border-blue-500 focus:ring-0 text-lg font-bold text-slate-700"
+                        placeholder="結束日期"
+                      />
+                    </div>
+                  </div>
+                )}
 
                 {/* 單日預約日期選擇器 */}
                 {bookingMode === 'single' && (
@@ -313,6 +353,7 @@ export default function App() {
                   selectedTreatments. length === 0 || 
                   !bookingMode || 
                   (bookingMode === 'single' && !singleDate) ||
+                  (bookingMode === 'range' && (! appointmentRange.start || !appointmentRange.end)) ||
                   isMatching
                 }
                 className="w-full bg-slate-900 hover:bg-blue-600 disabled:bg-slate-200 text-white font-black py-8 rounded-[2.5rem] shadow-2xl transition-all flex items-center justify-center gap-6 text-3xl active:scale-95 disabled:cursor-not-allowed"
@@ -360,12 +401,12 @@ export default function App() {
                               : "bg-white text-slate-700"
                           }`}
                         >
-                          {doc. name[0]}
+                          {doc.name[0]}
                         </div>
                         <div>
                           <p className="text-lg font-black text-slate-900">{doc.name} 醫師</p>
                           <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
-                            {doc.dept}
+                            {doc. dept}
                           </p>
                         </div>
                       </div>
@@ -441,7 +482,7 @@ export default function App() {
                                       ? "bg-blue-400"
                                       : key === "endo"
                                       ? "bg-green-400"
-                                      : key === "pros"
+                                      :  key === "pros"
                                       ? "bg-purple-400"
                                       : "bg-amber-400"
                                   }`}
@@ -475,10 +516,10 @@ export default function App() {
                       <div className="w-2 h-2 rounded-full bg-blue-500"></div> OS:  {displayStats.os}
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-green-500"></div> Endo: {displayStats. endo}
+                      <div className="w-2 h-2 rounded-full bg-green-500"></div> Endo: {displayStats.endo}
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-purple-500"></div> Pros: {displayStats. pros}
+                      <div className="w-2 h-2 rounded-full bg-purple-500"></div> Pros: {displayStats.pros}
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full bg-amber-500"></div> Gen: {displayStats.gen}
@@ -491,7 +532,7 @@ export default function App() {
         ) : (
           <BookingResult 
             doctor={bookedDoctor} 
-            dateRange={dateRange} 
+            dateRange={bookingMode === 'range' ? appointmentRange : dateRange}
             bookingMode={bookingMode}
             bookedDate={bookedDate}
             onReset={handleReset} 
