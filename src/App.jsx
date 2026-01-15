@@ -25,6 +25,15 @@ export default function App() {
   const [bookedDoctor, setBookedDoctor] = useState(null);
   const [isMatching, setIsMatching] = useState(false);
 
+  // 新增：追蹤實際預約的統計數據
+  const [actualBookingStats, setActualBookingStats] = useState({
+    total: 0,
+    os: 0,
+    endo: 0,
+    pros: 0,
+    gen:  0,
+  });
+
   const [dateRange, setDateRange] = useState({
     start: todayISO(),
     end: addDaysISO(30),
@@ -40,6 +49,18 @@ export default function App() {
     [intervalDays]
   );
 
+  // 合併預估統計與實際預約統計
+  const displayStats = useMemo(
+    () => ({
+      total: clinicStats.total + actualBookingStats.total,
+      os: clinicStats.os + actualBookingStats.os,
+      endo: clinicStats.endo + actualBookingStats.endo,
+      pros: clinicStats.pros + actualBookingStats. pros,
+      gen: clinicStats.gen + actualBookingStats.gen,
+    }),
+    [clinicStats, actualBookingStats]
+  );
+
   const doctorRangeStats = useMemo(
     () => buildDoctorRangeStats(doctors, intervalDays),
     [doctors, intervalDays]
@@ -50,7 +71,7 @@ export default function App() {
     const today = new Date();
     const year = today.getFullYear();
     const month = String(today. getMonth() + 1).padStart(2, '0');
-    const day = String(today. getDate()).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
     return `${year}/${month}/${day}`;
   };
 
@@ -63,18 +84,41 @@ export default function App() {
   };
 
   const handleMatch = () => {
-    if (selectedTreatments. length === 0) return;
+    if (selectedTreatments.length === 0) return;
     setIsMatching(true);
 
     setTimeout(() => {
       const result = calculateBestDoctor(selectedTreatments, doctors);
 
       if (result && result !== "NONE") {
+        // 更新醫師的每日預約數
         setDoctors((prev) =>
           prev.map((d) =>
-            d.id === result.id ? { ...d, dailyCount: d.dailyCount + 1 } : d
+            d.id === result.id ? { ... d, dailyCount: d.dailyCount + 1 } :  d
           )
         );
+
+        // 更新實際預約統計數據
+        setActualBookingStats((prev) => {
+          const newStats = { ...prev };
+          newStats. total += 1;
+
+          // 根據預約的處置項目類別更新對應的統計
+          selectedTreatments.forEach((treatment) => {
+            const category = treatment.category;
+            if (category === "os") {
+              newStats. os += 1;
+            } else if (category === "endo") {
+              newStats. endo += 1;
+            } else if (category === "pros") {
+              newStats.pros += 1;
+            } else if (category === "general") {
+              newStats.gen += 1;
+            }
+          });
+
+          return newStats;
+        });
       }
 
       setBookedDoctor(result);
@@ -106,23 +150,36 @@ export default function App() {
             </div>
           </div>
 
-          <div className="bg-slate-50 px-10 py-5 rounded-[2rem] border border-slate-100">
-            <div className="flex items-center gap-6">
-              <Calendar size={28} className="text-blue-500" />
-              <div>
-                <div className="text-xs font-black text-slate-400 uppercase tracking-widest">
-                  預約區間
-                </div>
-                <div className="text-base font-black text-slate-900 mt-1">
-                  {dateRange.start} ~ {dateRange.end}
-                </div>
+          <div className="flex items-center gap-4 bg-slate-50 p-3 rounded-3xl border border-slate-100 shadow-inner w-full md:w-auto">
+            <div className="px-6 text-center">
+              <label className="block text-xs font-black text-slate-400 uppercase mb-1 tracking-widest">
+                統計日期範圍
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="date"
+                  value={dateRange.start}
+                  onChange={(e) =>
+                    setDateRange({ ...dateRange, start: e. target.value })
+                  }
+                  className="bg-transparent border-none p-0 focus:ring-0 text-lg font-bold text-slate-700"
+                />
+                <ArrowRight size={20} className="text-slate-300" />
+                <input
+                  type="date"
+                  value={dateRange.end}
+                  onChange={(e) =>
+                    setDateRange({ ...dateRange, end: e.target. value })
+                  }
+                  className="bg-transparent border-none p-0 focus:ring-0 text-lg font-bold text-slate-700"
+                />
               </div>
             </div>
           </div>
         </div>
 
         {! bookedDoctor ? (
-          <div className="grid lg:grid-cols-12 gap-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 animate-in fade-in duration-700">
             {/* 左側：處置選擇 */}
             <div className="lg:col-span-7 bg-white p-12 rounded-[4rem] shadow-xl border border-white relative overflow-hidden">
               <div className="flex items-center gap-4 mb-12">
@@ -136,7 +193,7 @@ export default function App() {
                 {Object.entries(TREATMENT_DATA).map(([category, items]) => (
                   <div key={category}>
                     <h3 className="text-sm font-black text-slate-300 uppercase tracking-[0.4em] mb-6 flex items-center gap-4">
-                      {category} <div className="flex-1 h-[1.5px] bg-slate-50"></div>
+                      {category} <div className="flex-1 h-[1. 5px] bg-slate-50"></div>
                     </h3>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -156,7 +213,7 @@ export default function App() {
               <button
                 onClick={handleMatch}
                 disabled={selectedTreatments.length === 0 || isMatching}
-                className="w-full mt-16 bg-slate-900 hover:bg-blue-600 disabled:bg-slate-200 text-white font-black py-8 rounded-[2. 5rem] shadow-2xl transition-all flex items-center justify-center gap-6 text-3xl active:scale-95"
+                className="w-full mt-16 bg-slate-900 hover:bg-blue-600 disabled:bg-slate-200 text-white font-black py-8 rounded-[2.5rem] shadow-2xl transition-all flex items-center justify-center gap-6 text-3xl active:scale-95"
               >
                 {isMatching ? (
                   <div className="animate-spin rounded-full h-8 w-8 border-4 border-white border-t-transparent" />
@@ -170,8 +227,8 @@ export default function App() {
 
             {/* 右側資訊欄 */}
             <div className="lg:col-span-5 space-y-10">
-              {/* 今日門診預約人數 - 加入今天日期 */}
-              <div className="bg-white p-10 rounded-[3. 5rem] border border-blue-50 shadow-xl relative overflow-hidden">
+              {/* 今日門診預約人數 */}
+              <div className="bg-white p-10 rounded-[3.5rem] border border-blue-50 shadow-xl relative overflow-hidden">
                 <div className="flex items-center justify-between mb-8">
                   <div>
                     <h2 className="text-xl font-black text-slate-900 flex items-center gap-3">
@@ -206,7 +263,7 @@ export default function App() {
                         <div>
                           <p className="text-lg font-black text-slate-900">{doc.name} 醫師</p>
                           <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
-                            {doc. dept}
+                            {doc.dept}
                           </p>
                         </div>
                       </div>
@@ -225,9 +282,9 @@ export default function App() {
                         <div className="w-20 h-2 bg-slate-200 rounded-full mt-2 overflow-hidden">
                           <div
                             className={`h-full transition-all duration-1000 ${
-                              doc. dailyCount >= 5 ? "bg-red-500" : "bg-orange-500"
+                              doc. dailyCount >= 5 ?  "bg-red-500" :  "bg-orange-500"
                             }`}
-                            style={{ width: `${(doc.dailyCount / 5) * 100}%` }}
+                            style={{ width:  `${(doc.dailyCount / 5) * 100}%` }}
                           />
                         </div>
                       </div>
@@ -236,7 +293,7 @@ export default function App() {
                 </div>
               </div>
 
-              {/* 醫師區間績效統計 - 放大字體 */}
+              {/* 醫師區間績效統計 */}
               <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-xl">
                 <div className="flex items-center justify-between mb-8">
                   <h2 className="text-2xl font-black text-slate-900 flex items-center gap-3">
@@ -284,7 +341,7 @@ export default function App() {
                                       ? "bg-green-400"
                                       : key === "pros"
                                       ? "bg-purple-400"
-                                      : "bg-amber-400"
+                                      :  "bg-amber-400"
                                   }`}
                                   style={{ width: `${(value / (personalStats?.total || 1)) * 100}%` }}
                                 />
@@ -297,35 +354,41 @@ export default function App() {
                   })}
                 </div>
               </div>
+
+              {/* 全院區間摘要 - 移到右側，尺寸縮小 */}
+              <div className="bg-slate-900 p-8 rounded-[3rem] text-white shadow-xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-6 opacity-10">
+                  <BarChart3 size={80} />
+                </div>
+                <div className="relative z-10">
+                  <div className="flex items-center gap-3 mb-4">
+                    <TrendingUp size={20} className="text-blue-400" />
+                    <h2 className="text-lg font-black tracking-widest uppercase">全院區間摘要</h2>
+                  </div>
+                  <div className="text-3xl font-black text-white tracking-tighter mb-6">
+                    {displayStats.total} <span className="text-sm font-bold text-blue-400 ml-1">人次累計</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 text-xs font-black uppercase tracking-widest text-slate-400">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-blue-500"></div> OS:  {displayStats.os}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-green-500"></div> Endo: {displayStats. endo}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-purple-500"></div> Pros: {displayStats. pros}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-amber-500"></div> Gen: {displayStats.gen}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         ) : (
           <BookingResult doctor={bookedDoctor} dateRange={dateRange} onReset={handleReset} />
         )}
-      </div>
-
-      <div className="max-w-7xl mx-auto mt-16 bg-slate-900 rounded-[3rem] shadow-2xl overflow-hidden">
-        <div className="p-16">
-          <div className="grid lg:grid-cols-3 gap-14">
-            <div className="lg:col-span-2 space-y-8">
-              <div className="flex items-center gap-6">
-                <div className="p-4 bg-blue-600 rounded-2xl">
-                  <BarChart3 size={40} className="text-white" />
-                </div>
-                <h3 className="text-3xl font-black text-white tracking-tight">區間總覽 · 排程統計</h3>
-              </div>
-              <div className="text-5xl font-black text-white tracking-tighter mb-8">
-                {clinicStats.total} <span className="text-lg font-bold text-blue-400 ml-1">人次累計</span>
-              </div>
-              <div className="grid grid-cols-2 gap-6 text-xs font-black uppercase tracking-widest text-slate-400">
-                <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-blue-500"></div> OS:  {clinicStats.os}</div>
-                <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-green-500"></div> Endo: {clinicStats. endo}</div>
-                <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-purple-500"></div> Pros: {clinicStats.pros}</div>
-                <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-amber-500"></div> Gen: {clinicStats.gen}</div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
 
       <style>{`
