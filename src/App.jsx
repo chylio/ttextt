@@ -25,21 +25,21 @@ export default function App() {
   const [bookedDoctor, setBookedDoctor] = useState(null);
   const [isMatching, setIsMatching] = useState(false);
   
-  // 新增：預約模式（'range' 區間 或 'single' 單日）
+  // 預約模式（'range' 區間 或 'single' 單日）
   const [bookingMode, setBookingMode] = useState("");
   
-  // 新增：單日預約日期
+  // 單日預約日期
   const [singleDate, setSingleDate] = useState("");
   
-  // 新增：實際預約的日期
+  // 實際預約的日期
   const [bookedDate, setBookedDate] = useState(null);
 
-  // 新增：追蹤實際預約的統計數據
+  // 追蹤實際預約的統計數據
   const [actualBookingStats, setActualBookingStats] = useState({
-    total:  0,
-    os: 0,
-    endo: 0,
-    pros:  0,
+    total: 0,
+    os:  0,
+    endo:  0,
+    pros: 0,
     gen: 0,
   });
 
@@ -64,7 +64,7 @@ export default function App() {
       total: clinicStats.total + actualBookingStats.total,
       os: clinicStats.os + actualBookingStats.os,
       endo: clinicStats.endo + actualBookingStats.endo,
-      pros: clinicStats.pros + actualBookingStats. pros,
+      pros: clinicStats.pros + actualBookingStats.pros,
       gen: clinicStats.gen + actualBookingStats.gen,
     }),
     [clinicStats, actualBookingStats]
@@ -79,12 +79,12 @@ export default function App() {
   const getTodayDate = () => {
     const today = new Date();
     const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const month = String(today. getMonth() + 1).padStart(2, '0');
     const day = String(today.getDate()).padStart(2, '0');
     return `${year}/${month}/${day}`;
   };
 
-  // 新增：計算優先預約日期（從區間中選擇最早的日期）
+  // 計算優先預約日期（從區間中選擇最早的日期）
   const calculatePreferredDate = () => {
     if (bookingMode === 'single' && singleDate) {
       return singleDate;
@@ -116,7 +116,7 @@ export default function App() {
         // 更新醫師的每日預約數
         setDoctors((prev) =>
           prev.map((d) =>
-            d.id === result.id ? { ...d, dailyCount: d.dailyCount + 1 } : d
+            d.id === result.id ?  { ...d, dailyCount: d.dailyCount + 1 } : d
           )
         );
 
@@ -133,9 +133,9 @@ export default function App() {
           selectedTreatments.forEach((treatment) => {
             const category = treatment.category;
             if (category === "os") {
-              newStats. os += 1;
+              newStats.os += 1;
             } else if (category === "endo") {
-              newStats. endo += 1;
+              newStats.endo += 1;
             } else if (category === "pros") {
               newStats.pros += 1;
             } else if (category === "general") {
@@ -208,47 +208,19 @@ export default function App() {
         </div>
 
         {! bookedDoctor ? (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 animate-in fade-in duration-700">
-            {/* 左側：處置選擇 */}
+          <div className="grid grid-cols-1 lg: grid-cols-12 gap-10 animate-in fade-in duration-700">
+            {/* 左側：預約日期與處置選擇 */}
             <div className="lg:col-span-7 bg-white p-12 rounded-[4rem] shadow-xl border border-white relative overflow-hidden">
-              <div className="flex items-center gap-4 mb-12">
-                <div className="w-2 h-10 bg-blue-600 rounded-full shadow-[0_0_15px_rgba(37,99,235,0.4)]"></div>
-                <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-                  第一步：選擇預約處置項目
-                </h2>
-              </div>
-
-              <div className="space-y-16">
-                {Object.entries(TREATMENT_DATA).map(([category, items]) => (
-                  <div key={category}>
-                    <h3 className="text-sm font-black text-slate-300 uppercase tracking-[0.4em] mb-6 flex items-center gap-4">
-                      {category} <div className="flex-1 h-[1.5px] bg-slate-50"></div>
-                    </h3>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                      {items.map((item) => (
-                        <TreatmentItem
-                          key={item.id}
-                          item={item}
-                          isSelected={!! selectedTreatments.find((t) => t.id === item.id)}
-                          onToggle={handleToggle}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* 新增：預約模式選擇 */}
-              <div className="mt-16 space-y-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-2 h-10 bg-indigo-600 rounded-full shadow-[0_0_15px_rgba(99,102,241,0.4)]"></div>
+              {/* 第一步：選擇預約日期 */}
+              <div className="mb-16">
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="w-2 h-10 bg-blue-600 rounded-full shadow-[0_0_15px_rgba(37,99,235,0.4)]"></div>
                   <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-                    第二步：選擇預約模式
+                    第一步：選擇預約日期
                   </h2>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
                   <button
                     onClick={() => {
                       setBookingMode('range');
@@ -256,12 +228,12 @@ export default function App() {
                     }}
                     className={`p-8 rounded-[2.5rem] border-2 transition-all ${
                       bookingMode === 'range'
-                        ? 'bg-indigo-50 border-indigo-500 shadow-lg'
-                        : 'bg-white border-slate-200 hover:border-indigo-300'
+                        ? 'bg-blue-50 border-blue-500 shadow-lg'
+                        : 'bg-white border-slate-200 hover:border-blue-300'
                     }`}
                   >
-                    <Calendar className={`mx-auto mb-4 ${bookingMode === 'range' ? 'text-indigo-600' : 'text-slate-400'}`} size={40} />
-                    <h3 className={`text-xl font-black mb-2 ${bookingMode === 'range' ? 'text-indigo-900' : 'text-slate-700'}`}>
+                    <Calendar className={`mx-auto mb-4 ${bookingMode === 'range' ?  'text-blue-600' : 'text-slate-400'}`} size={40} />
+                    <h3 className={`text-xl font-black mb-2 ${bookingMode === 'range' ? 'text-blue-900' : 'text-slate-700'}`}>
                       區間預約
                     </h3>
                     <p className="text-sm font-bold text-slate-500">
@@ -273,12 +245,12 @@ export default function App() {
                     onClick={() => setBookingMode('single')}
                     className={`p-8 rounded-[2.5rem] border-2 transition-all ${
                       bookingMode === 'single'
-                        ?  'bg-indigo-50 border-indigo-500 shadow-lg'
-                        :  'bg-white border-slate-200 hover:border-indigo-300'
+                        ?  'bg-blue-50 border-blue-500 shadow-lg'
+                        : 'bg-white border-slate-200 hover:border-blue-300'
                     }`}
                   >
-                    <Calendar className={`mx-auto mb-4 ${bookingMode === 'single' ? 'text-indigo-600' : 'text-slate-400'}`} size={40} />
-                    <h3 className={`text-xl font-black mb-2 ${bookingMode === 'single' ? 'text-indigo-900' :  'text-slate-700'}`}>
+                    <Calendar className={`mx-auto mb-4 ${bookingMode === 'single' ? 'text-blue-600' : 'text-slate-400'}`} size={40} />
+                    <h3 className={`text-xl font-black mb-2 ${bookingMode === 'single' ? 'text-blue-900' : 'text-slate-700'}`}>
                       單日預約
                     </h3>
                     <p className="text-sm font-bold text-slate-500">
@@ -289,19 +261,50 @@ export default function App() {
 
                 {/* 單日預約日期選擇器 */}
                 {bookingMode === 'single' && (
-                  <div className="bg-indigo-50 p-8 rounded-[2.5rem] border-2 border-indigo-200 animate-in slide-in-from-top duration-500">
-                    <label className="block text-sm font-black text-indigo-900 mb-3 uppercase tracking-widest">
+                  <div className="bg-blue-50 p-8 rounded-[2.5rem] border-2 border-blue-200 animate-in slide-in-from-top duration-500">
+                    <label className="block text-sm font-black text-blue-900 mb-3 uppercase tracking-widest">
                       選擇預約日期
                     </label>
                     <input
                       type="date"
                       value={singleDate}
-                      onChange={(e) => setSingleDate(e.target.value)}
+                      onChange={(e) => setSingleDate(e.target. value)}
                       min={todayISO()}
-                      className="w-full p-4 rounded-2xl border-2 border-indigo-300 focus:border-indigo-500 focus:ring-0 text-lg font-bold text-slate-700"
+                      className="w-full p-4 rounded-2xl border-2 border-blue-300 focus:border-blue-500 focus:ring-0 text-lg font-bold text-slate-700"
                     />
                   </div>
                 )}
+              </div>
+
+              {/* 第二步：選擇預約處置項目 */}
+              <div className="mb-16">
+                <div className="flex items-center gap-4 mb-12">
+                  <div className="w-2 h-10 bg-indigo-600 rounded-full shadow-[0_0_15px_rgba(99,102,241,0.4)]"></div>
+                  <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+                    第二步：選擇預約處置項目
+                  </h2>
+                </div>
+
+                <div className="space-y-16">
+                  {Object.entries(TREATMENT_DATA).map(([category, items]) => (
+                    <div key={category}>
+                      <h3 className="text-sm font-black text-slate-300 uppercase tracking-[0.4em] mb-6 flex items-center gap-4">
+                        {category} <div className="flex-1 h-[1.5px] bg-slate-50"></div>
+                      </h3>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        {items.map((item) => (
+                          <TreatmentItem
+                            key={item.id}
+                            item={item}
+                            isSelected={!! selectedTreatments.find((t) => t.id === item.id)}
+                            onToggle={handleToggle}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <button
@@ -312,7 +315,7 @@ export default function App() {
                   (bookingMode === 'single' && !singleDate) ||
                   isMatching
                 }
-                className="w-full mt-8 bg-slate-900 hover:bg-blue-600 disabled:bg-slate-200 text-white font-black py-8 rounded-[2.5rem] shadow-2xl transition-all flex items-center justify-center gap-6 text-3xl active:scale-95"
+                className="w-full bg-slate-900 hover:bg-blue-600 disabled:bg-slate-200 text-white font-black py-8 rounded-[2.5rem] shadow-2xl transition-all flex items-center justify-center gap-6 text-3xl active:scale-95 disabled:cursor-not-allowed"
               >
                 {isMatching ? (
                   <div className="animate-spin rounded-full h-8 w-8 border-4 border-white border-t-transparent" />
@@ -327,7 +330,7 @@ export default function App() {
             {/* 右側資訊欄 */}
             <div className="lg:col-span-5 space-y-10">
               {/* 今日門診預約人數 */}
-              <div className="bg-white p-10 rounded-[3. 5rem] border border-blue-50 shadow-xl relative overflow-hidden">
+              <div className="bg-white p-10 rounded-[3.5rem] border border-blue-50 shadow-xl relative overflow-hidden">
                 <div className="flex items-center justify-between mb-8">
                   <div>
                     <h2 className="text-xl font-black text-slate-900 flex items-center gap-3">
@@ -357,7 +360,7 @@ export default function App() {
                               : "bg-white text-slate-700"
                           }`}
                         >
-                          {doc.name[0]}
+                          {doc. name[0]}
                         </div>
                         <div>
                           <p className="text-lg font-black text-slate-900">{doc.name} 醫師</p>
@@ -438,7 +441,7 @@ export default function App() {
                                       ? "bg-blue-400"
                                       : key === "endo"
                                       ? "bg-green-400"
-                                      :  key === "pros"
+                                      : key === "pros"
                                       ? "bg-purple-400"
                                       : "bg-amber-400"
                                   }`}
@@ -472,10 +475,10 @@ export default function App() {
                       <div className="w-2 h-2 rounded-full bg-blue-500"></div> OS:  {displayStats.os}
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-green-500"></div> Endo: {displayStats.endo}
+                      <div className="w-2 h-2 rounded-full bg-green-500"></div> Endo: {displayStats. endo}
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-purple-500"></div> Pros: {displayStats.pros}
+                      <div className="w-2 h-2 rounded-full bg-purple-500"></div> Pros: {displayStats. pros}
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full bg-amber-500"></div> Gen: {displayStats.gen}
