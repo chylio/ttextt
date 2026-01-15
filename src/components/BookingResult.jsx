@@ -1,7 +1,7 @@
 import React from "react";
 import { AlertCircle, Calendar, CheckCircle2, Clock, Printer, RotateCcw, Sparkles } from "lucide-react";
 
-export default function BookingResult({ doctor, dateRange, onReset }) {
+export default function BookingResult({ doctor, dateRange, bookingMode, bookedDate, onReset }) {
   if (doctor === "NONE") {
     return (
       <div className="text-center p-16 bg-white rounded-[4rem] border border-slate-200 shadow-2xl max-w-2xl mx-auto">
@@ -17,6 +17,25 @@ export default function BookingResult({ doctor, dateRange, onReset }) {
       </div>
     );
   }
+
+  // 格式化日期顯示
+  const formatDateDisplay = () => {
+    if (bookingMode === 'single') {
+      return {
+        title: "預約日期",
+        content: bookedDate
+      };
+    } else if (bookingMode === 'range') {
+      return {
+        title: "預約日期",
+        content:  `${bookedDate}`,
+        subtitle: `（區間 ${dateRange.start} ~ ${dateRange.end}）`
+      };
+    }
+    return null;
+  };
+
+  const dateDisplay = formatDateDisplay();
 
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-[4rem] shadow-2xl overflow-hidden border border-white animate-in slide-in-from-bottom-12 duration-700">
@@ -39,7 +58,7 @@ export default function BookingResult({ doctor, dateRange, onReset }) {
                 {doctor.name} <span className="text-2xl font-bold text-slate-400">醫師</span>
               </h3>
               <div className="flex justify-center gap-3 mt-4">
-                <span className="bg-blue-600 text-white px-4 py-1.5 rounded-xl text-xs font-black uppercase tracking-widest shadow-md shadow-blue-100">
+                <span className="bg-blue-600 text-white px-4 py-1. 5 rounded-xl text-xs font-black uppercase tracking-widest shadow-md shadow-blue-100">
                   {doctor.level}
                 </span>
                 <span className="bg-slate-100 text-slate-500 px-4 py-1.5 rounded-xl text-xs font-black uppercase tracking-widest">
@@ -57,15 +76,26 @@ export default function BookingResult({ doctor, dateRange, onReset }) {
                 <div className="text-4xl font-black text-slate-900 tracking-tighter">第 {doctor.dailyCount} 號</div>
               </div>
             </div>
-            <div className="bg-slate-50 p-8 rounded-[2.5rem] border border-slate-100 flex items-center gap-6">
-              <Calendar className="text-indigo-500" size={32} />
-              <div>
-                <div className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">預約區間</div>
-                <div className="text-base font-black text-slate-700 leading-snug">
-                  {dateRange.start} <br />至 {dateRange.end}
+            
+            {/* 新增：顯示預約日期 */}
+            {dateDisplay && (
+              <div className="bg-indigo-50 p-8 rounded-[2.5rem] border-2 border-indigo-200 flex items-center gap-6">
+                <Calendar className="text-indigo-600" size={32} />
+                <div className="flex-1">
+                  <div className="text-xs font-black text-indigo-400 uppercase tracking-widest mb-1">
+                    {dateDisplay.title}
+                  </div>
+                  <div className="text-2xl font-black text-indigo-900 tracking-tight">
+                    {dateDisplay. content}
+                  </div>
+                  {dateDisplay.subtitle && (
+                    <div className="text-xs font-bold text-indigo-600 mt-1">
+                      {dateDisplay.subtitle}
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 
@@ -83,8 +113,8 @@ export default function BookingResult({ doctor, dateRange, onReset }) {
                 className="flex items-start gap-4 animate-in slide-in-from-left duration-500"
                 style={{ animationDelay: `${index * 150}ms` }}
               >
-                <div className="w-2.5 h-2.5 rounded-full bg-blue-500 mt-2.5 shrink-0 shadow-sm shadow-blue-200"></div>
-                <p className="text-lg font-bold text-blue-800 leading-relaxed">{reason}</p>
+                <div className="w-2. 5 h-2.5 rounded-full bg-blue-500 mt-3 shrink-0 shadow-sm shadow-blue-200"></div>
+                <p className="text-xl font-bold text-blue-800 leading-relaxed">{reason}</p>
               </div>
             ))}
           </div>
